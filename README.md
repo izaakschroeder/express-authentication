@@ -97,16 +97,13 @@ app.get('/any', function(req, res) {
  * [Google](http://www.github.com/)
  * [OAuth2](http://www.github.com/)
 
-## Sugar
+## Mixins
 
- * Actions
-  * required - fail the route unless auth succeeded
-  * succeeded - continue middleware chain only if auth succeeded
-  * failed - continue middleware chain only if auth failed
-  * tried - continue middleware chain only if auth tried
-  * untried - continue middleware chain only if auth untried
- * Filters
-  * by - apply only to the given authentication middleware
+ * required - fail the route unless auth succeeded
+ * succeeded - continue middleware chain only if auth succeeded
+ * failed - continue middleware chain only if auth failed
+ * tried - continue middleware chain only if auth tried
+ * untried - continue middleware chain only if auth untried
 
 ## Roll Your Own Middleware
 
@@ -149,24 +146,69 @@ Make sure you include us in your keywords and mark which version of the API you 
 {
 	"keywords": [ "express-authentication" ],
 	"peerDependencies": {
-		"express-authentication": "^1.0.0"
+		"express-authentication": "^0.1.0"
 	}
 }
 ```
 
 ## Differences to passport
 
-Passport is _very_ opinionated.
+Passport is _very_ opinionated. Passport has more strategies available.
 
-It's an authentication framework. We don't touch your sessions. passport (although possible to use without) pretty much assumes you're going to be using session-based authentication.
+### Passport loves sessions
+
+`express-authentication` an authentication framework; we don't touch your sessions. passport (although possible to use without) pretty much assumes you're going to be using session-based authentication.
+
+### Passport strategies must extend base class
+
+Passport strategies must always inherit from a base `Strategy` class; they are not middleware themselves.
+
+`passport` strategy:
 
 ```javascript
-this.use(new SessionStrategy());
+// passport strategy
+function SessionStrategy() {
+	Strategy.call(this);
+	this.name = 'session';
+}
+util.inherits(SessionStrategy, Strategy);
+
+SessionStrategy.prototype.authenticate = function(req, options) {
+	// ...
+}
+
+module.exports = SessionStrategy;
 ```
 
-Authentication is tightly coupled in passport. It is not possible to delegate when authentication failure should occur. passport strategies must also always inherit from a base `Strategy` class; they are not middleware themselves.
+`express-authentication` middleware:
 
+```javascript
+module.exports = function(req, res, next) {
+	// ...
+}
+```
 
+### Passport delegation not possible
+
+Authentication and actions from authentication results are tightly coupled in passport. It is not possible to delegate when authentication failure should occur.
+
+`passport` delegation:
+
+```javascript
+// passport binds actions
+app.get('/login', passport.authenticate('provider', {
+	successRedirect: '/',
+	failureRedirect: '/login'
+}));
+```
+
+`express-authentication` delegation:
+
+```javascript
+// express-authentication lets you do what you want
+app.get('/login', auth.for(provider).succeeded(), redirect('/'))
+app.get('/login', auth.for(provider).failed(), redirect('/login'))
+```
 
 [express]: http://expressjs.com/
 [passport]: https://github.com/jaredhanson/passport
