@@ -5,9 +5,10 @@
 var express = require('express'),
 	http = require('http'),
 	path = require('path'),
-	authenticated = require(path.join(__dirname, '..'));
+	authentication = require(path.join(__dirname, '..'));
 
-var app = express();
+var app = express(),
+	auth = authentication();
 
 /**
  * Authentication middleware.
@@ -16,20 +17,21 @@ var app = express();
  * @param {Function} next Next in middleware chain.
  * @returns {void}
  */
-function authenticator(req, res, next) {
+function secret(req, res, next) {
 
 	// If authorization header is provided then mark that the user
 	// has tried authentication
-	if (req.headers['authorization']) {
-		req.authentication = true;
-	}
+	req.challenge = req.headers['authorization'];
+
 
 	// If the authorization header is correct, mark the request as
 	// being authenticated and mark the identity of the authenticator
 	// as "fancyuser".
 	if (req.headers['authorization'] === 'secret') {
 		req.authenticated = true;
-		req.principal = 'fancyuser';
+		req.authentication = 'fancyuser';
+	} else {
+		req.authenticated = false;
 	}
 
 	// Call the next entry in the middleware chain
@@ -37,7 +39,8 @@ function authenticator(req, res, next) {
 }
 
 // Create middleware sequence
-var secret = [ authenticator(), authenticated() ];
+app.use(auth);
+app.use(auth.for(secret));
 
 // Simple unauthenticated route
 app.get('/', function indexRoute(req, res) {
@@ -45,9 +48,18 @@ app.get('/', function indexRoute(req, res) {
 });
 
 // Secret route
-app.get('/secret', secret, function secretRoute(req, res) {
+app.get('/secret', auth.required(), function secretRoute(req, res) {
 	res.status(200).send({ message: 'secret' });
 });
 
+app.get('/other', auth.for(secret).succeeded(), function other(req, res) {
+	//var data = auth.for(secret).of(req);
+	res.status(200).send({ message: 'hello' });
+});
+
+app.get('/other', auth.for(secret).failed(), function other2(req, res) {
+	res.status(400).send({ message: 'auth_fail_lelelel' });
+});
+
 // Start the server
-http.createServer(app).listen(process.env.PORT);
+http.createServer(app).listen(process.env.PORT || 5553);

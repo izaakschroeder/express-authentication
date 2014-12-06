@@ -2,11 +2,11 @@
 
 Unopinionated authentication for [express]; an alternative to [passport].
 
-![build status](http://img.shields.io/travis/izaakschroeder/s3-streams.svg?style=flat)
-![coverage](http://img.shields.io/coveralls/izaakschroeder/s3-streams.svg?style=flat)
-![license](http://img.shields.io/npm/l/s3-streams.svg?style=flat)
-![version](http://img.shields.io/npm/v/s3-streams.svg?style=flat)
-![downloads](http://img.shields.io/npm/dm/s3-streams.svg?style=flat)
+![build status](http://img.shields.io/travis/izaakschroeder/express-authentication.svg?style=flat&branch=master)
+![coverage](http://img.shields.io/coveralls/izaakschroeder/express-authentication.svg?style=flat&branch=master)
+![license](http://img.shields.io/npm/l/express-authentication.svg?style=flat)
+![version](http://img.shields.io/npm/v/express-authentication.svg?style=flat)
+![downloads](http://img.shields.io/npm/dm/express-authentication.svg?style=flat)
 
 ## Usage
 
@@ -56,32 +56,32 @@ app.use(authentication);
 // Allow session/api authentication to occur anywhere; that is to say someone
 // can provide credentials for either kind of authentication and they will be
 // accepted.
-app.use(session);
-app.use(api);
+app.use(authentication.for(session));
+app.use(authentication.for(api));
 
 // Only allow facebook authentication to occur at the /facebook location.
 app.use('/facebook', facebook);
 
 // Ensure this route is only authenticated via session
-app.get('/session', authentication.by(session).required());
+app.get('/session', authentication.for(session).required());
 
 // Allow anything to authenticate against this route
 app.get('/any', authentication.required());
 
 // Allow either API or session to authenticate against this route
-app.get('/api-or-session', authentication.by([api, session]).required());
+app.get('/api-or-session', authentication.for([api, session]).required());
 
 // Invoke specific middleware when authentication either succeeds or fails
 // which is much more powerful than passports `redirect` ability.
-app.get('/handlers', authentication.by(api).succeeded(), redirect())
-app.get('/handlers', authentication.by(session).succeeded(), redirect())
+app.get('/handlers', authentication.for(api).succeeded(), redirect())
+app.get('/handlers', authentication.for(session).succeeded(), redirect())
 app.get('/handlers', authentication.failed(), redirect())
 
 // Get authentication data from middleware itself
 app.get('/any', function(req, res) {
 
 	// Get anything that was set
-	var auth = authentication.for(req).by(api);
+	var auth = authentication.for(api).of(req);
 
 	if (auth.succeeded) {
 		// Use auth.data
