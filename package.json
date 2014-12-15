@@ -21,7 +21,7 @@
 		"express": "^4.10.2"
 	},
 	"dependencies": {
-		"express-context": "^0.3.0",
+		"express-context": "^0.5.0",
 		"lodash": "^2.4.1"
 	},
 	"devDependencies": {
