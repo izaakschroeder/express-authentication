@@ -8,7 +8,12 @@ describe('mixins', function() {
 		beforeEach(function() {
 			this.sandbox = sinon.sandbox.create();
 			this.of = this.sandbox.stub().returns({ });
-			this.tried = tried.call({ of: this.of });
+			this.tried = tried.call({
+				of: this.of,
+				chain: function(fn) {
+					return fn;
+				}
+			});
 		});
 
 		afterEach(function() {

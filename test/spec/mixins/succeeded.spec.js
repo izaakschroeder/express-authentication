@@ -9,7 +9,12 @@ describe('mixins', function() {
 		beforeEach(function() {
 			this.sandbox = sinon.sandbox.create();
 			this.of = this.sandbox.stub().returns({ });
-			this.succeeded = succeeded.call({ of: this.of });
+			this.succeeded = succeeded.call({
+				of: this.of,
+				chain: function(fn) {
+					return fn;
+				}
+			});
 		});
 
 		afterEach(function() {
