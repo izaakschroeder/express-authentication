@@ -7,36 +7,21 @@ describe('mixins', function() {
 
 		beforeEach(function() {
 			this.sandbox = sinon.sandbox.create();
-			this.of = this.sandbox.stub().returns({ });
-			this.failed = failed.call({
-				of: this.of,
-				chain: function(fn) {
-					return fn;
-				}
-			});
 		});
 
 		afterEach(function() {
 			this.sandbox.restore();
 		});
 
-		it('should continue if all authenticated is false', function() {
+		it('should continue if authenticated is false', function() {
 			var next = this.sandbox.stub();
-			this.of.returns({
-				a: { authenticated: false },
-				b: { authenticated: false }
-			});
-			this.failed(null, null, next);
+			failed()({ authenticated: false }, null, next);
 			expect(next).to.be.calledWith(null);
 		});
 
-		it('should next route if any authenticated is true', function() {
+		it('should next route if authenticated is true', function() {
 			var next = this.sandbox.stub();
-			this.of.returns({
-				a: { authenticated: false },
-				b: { authenticated: true }
-			});
-			this.failed(null, null, next);
+			failed()({ authenticated: true }, null, next);
 			expect(next).to.be.calledWith('route');
 		});
 

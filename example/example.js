@@ -3,12 +3,10 @@
 'use strict';
 
 var express = require('express'),
-	http = require('http'),
 	path = require('path'),
 	authentication = require(path.join(__dirname, '..'));
 
-var app = express(),
-	auth = authentication();
+var app = express();
 
 /**
  * Authentication middleware.
@@ -38,9 +36,7 @@ function secret(req, res, next) {
 	next();
 }
 
-// Create middleware sequence
-app.use(auth);
-app.use(auth.for(secret));
+var auth = authentication().for('secret').use(secret);
 
 // Simple unauthenticated route
 app.get('/', function indexRoute(req, res) {
@@ -52,14 +48,14 @@ app.get('/secret', auth.required(), function secretRoute(req, res) {
 	res.status(200).send({ message: 'secret' });
 });
 
-app.get('/other', auth.for(secret).succeeded(), function other(req, res) {
+app.get('/other', auth.succeeded(), function other(req, res) {
 	//var data = auth.for(secret).of(req);
 	res.status(200).send({ message: 'hello' });
 });
 
-app.get('/other', auth.for(secret).failed(), function other2(req, res) {
+app.get('/other', auth.failed(), function other2(req, res) {
 	res.status(400).send({ message: 'auth_fail_lelelel' });
 });
 
 // Start the server
-http.createServer(app).listen(process.env.PORT || 5553);
+app.listen(process.env.PORT || 5553);

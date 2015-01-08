@@ -10,16 +10,50 @@ Unopinionated authentication for [express]; an alternative to [passport].
 
 ## Usage
 
+If your needs are simple and you only have one kind of authentication you can use `express-authentication` mixins trivially out of the box.
+
 ```javascript
 var express = require('express'),
-	Authentication = require('express-authentication'),
+	authentication = require('express-authentication'),
 	app = express();
 
-var authentication = Authentication();
+app.use(function myauth(req, res, next) {
+	// provide the data that was used to authenticate the request; if this is
+	// not set then no attempt to authenticate is registered.
+	req.challenge = req.get('Authorization');
+
+	req.authenticated = req.authentication === 'secret';
+
+	// provide the result of the authentication; generally some kind of user
+	// object on success and some kind of error as to why authentication failed
+	// otherwise.
+	if (req.authenticated) {
+		req.authentication = { user: 'bob' };
+	} else {
+		req.authentication = { error: 'INVALID_API_KEY' };
+	}
+
+	// That's it! You're done!
+	next();
+});
+
+app.get('/secret', authentication.required(), function(req, res) {
+	res.status(200).send('Hello!');
+});
+```
+
+If you want to use more than one authentication middleware then use the magic of contextualization.
+
+```javascript
+var express = require('express'),
+	authentication = require('express-authentication'),
+	app = express();
+
+var auth = authentication();
 
 // Authentication is just middleware! The middleware must just obey a few rules;
 // no need to include another library.
-var api = function(req, res, next) {
+var api = auth.for('api').use(function(req, res, next) {
 
 	// provide the data that was used to authenticate the request; if this is
 	// not set then no attempt to authenticate is registered.
@@ -38,52 +72,46 @@ var api = function(req, res, next) {
 
 	// That's it! You're done!
 	next();
-};
+});
 
-var session = function(req, res, next) {
+var session = auth.for('session').use(function(req, res, next) {
 	// ...
-};
+});
 
-var facebook = function(req, res, next) {
+var facebook = auth.for('facebook').use(function(req, res, next) {
 	// ...
-};
-
-// To use all the fancy sugar methods we have to load the authentication
-// middleware as well. It is entirely possible to use this framework without it
-// but they provide a nice convenience.
-app.use(authentication);
+});
 
 // Allow session/api authentication to occur anywhere; that is to say someone
 // can provide credentials for either kind of authentication and they will be
 // accepted.
-app.use(authentication.for(session));
-app.use(authentication.for(api));
+app.use(session);
+app.use(api);
+
+
 
 // Only allow facebook authentication to occur at the /facebook location.
 app.use('/facebook', facebook);
 
 // Ensure this route is only authenticated via session
-app.get('/session', authentication.for(session).required());
+app.get('/session', session.required());
 
 // Allow anything to authenticate against this route
-app.get('/any', authentication.required());
-
-// Allow either API or session to authenticate against this route
-app.get('/api-or-session', authentication.for([api, session]).required());
+app.get('/any', auth.required());
 
 // Invoke specific middleware when authentication either succeeds or fails
 // which is much more powerful than passports `redirect` ability.
-app.get('/handlers', authentication.for(api).succeeded(), redirect())
-app.get('/handlers', authentication.for(session).succeeded(), redirect())
-app.get('/handlers', authentication.failed(), redirect())
+app.get('/handlers', api.succeeded(), redirect());
+app.get('/handlers', session.succeeded(), redirect());
+app.get('/handlers', auth.failed(), redirect());
 
 // Get authentication data from middleware itself
 app.get('/any', function(req, res) {
 
 	// Get anything that was set
-	var auth = authentication.for(api).of(req);
+	var result = api.of(req);
 
-	if (auth.succeeded) {
+	if (result.authenticated) {
 		// Use auth.data
 	}
 });
@@ -95,7 +123,7 @@ app.get('/any', function(req, res) {
  * [Facebook](http://www.github.com/)
  * [GitHub](http://www.github.com/)
  * [Google](http://www.github.com/)
- * [OAuth2](http://www.github.com/)
+ * [OAuth2](http://www.github.com/izaakschroeder/express-authentication-oauth2)
 
 ## Mixins
 
@@ -146,7 +174,7 @@ Make sure you include us in your keywords and mark which version of the API you 
 {
 	"keywords": [ "express-authentication" ],
 	"peerDependencies": {
-		"express-authentication": "^0.1.0"
+		"express-authentication": "^0.3.0"
 	}
 }
 ```
@@ -206,8 +234,8 @@ app.get('/login', passport.authenticate('provider', {
 
 ```javascript
 // express-authentication lets you do what you want
-app.get('/login', auth.for(provider).succeeded(), redirect('/'))
-app.get('/login', auth.for(provider).failed(), redirect('/login'))
+app.get('/login', provider.succeeded(), redirect('/'))
+app.get('/login', provider.failed(), redirect('/login'))
 ```
 
 [express]: http://expressjs.com/
