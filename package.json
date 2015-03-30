@@ -22,7 +22,7 @@
 	},
 	"dependencies": {
 		"express-context": "^0.7.0",
-		"lodash": "^2.4.1"
+		"lodash": "^3.6.0"
 	},
 	"devDependencies": {
 		"eslint": "*",
