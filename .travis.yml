@@ -1,7 +1,9 @@
 sudo: false
 language: node_js
 node_js:
-- '0.11'
+- 'iojs-2'
+- 'iojs-1'
+- '0.12'
 - '0.10'
 before_install:
 - npm install -g "npm@>=1.4.6"
