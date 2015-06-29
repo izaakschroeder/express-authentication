@@ -25,6 +25,7 @@
 		"lodash": "^3.6.0"
 	},
 	"devDependencies": {
+		"express": "^4.10.2",
 		"eslint": "*",
 		"eslint-plugin-nodeca": "*",
 		"mocha": "*",
