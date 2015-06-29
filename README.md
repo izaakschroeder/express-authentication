@@ -8,6 +8,15 @@ Unopinionated authentication for [express]; an alternative to [passport].
 ![version](http://img.shields.io/npm/v/express-authentication.svg?style=flat)
 ![downloads](http://img.shields.io/npm/dm/express-authentication.svg?style=flat)
 
+| Type      | URL                                                              |
+|-----------|------------------------------------------------------------------|
+|HTTP Basic |https://github.com/izaakschroeder/express-authentication-basic    |
+|HTTP Bearer|https://github.com/izaakschroeder/express-authentication-bearer   |
+|Facebook   |http://www.github.com/izaakschroeder/express-authentication-oauth2|
+|GitHub     |http://www.github.com/izaakschroeder/express-authentication-oauth2|
+|Google     |http://www.github.com/izaakschroeder/express-authentication-oauth2|
+|OAuth2     |http://www.github.com/izaakschroeder/express-authentication-oauth2|
+
 ## Usage
 
 If your needs are simple and you only have one kind of authentication you can use `express-authentication` mixins trivially out of the box.
@@ -117,13 +126,6 @@ app.get('/any', function(req, res) {
 });
 
 ```
-
-## Authentication Middleware
-
- * [Facebook](http://www.github.com/)
- * [GitHub](http://www.github.com/)
- * [Google](http://www.github.com/)
- * [OAuth2](http://www.github.com/izaakschroeder/express-authentication-oauth2)
 
 ## Mixins
 
