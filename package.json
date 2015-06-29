@@ -1,6 +1,6 @@
 {
 	"name": "express-authentication",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Unopinionated authentication middleware for express.",
 	"author": "Izaak Schroeder <izaak.schroeder@gmail.com>",
 	"keywords": [ "authentication", "express" ],
