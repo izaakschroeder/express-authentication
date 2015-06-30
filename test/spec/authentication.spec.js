@@ -63,22 +63,22 @@ describe('#authenticator', function() {
 
 	describe('without context', function() {
 
+		function query(param) {
+			return function middleware(req, res, next) {
+				req.challenge = req.query[param];
+				next();
+			};
+		}
+
+		function check(value) {
+			return function middleware(req, res, next) {
+				req.authenticated = req.challenge === value;
+				next();
+			};
+		}
+
 		beforeEach(function() {
 			var app = this.app = express();
-
-			function query(param) {
-				return function middleware(req, res, next) {
-					req.challenge = req.query[param];
-					next();
-				};
-			}
-
-			function check(value) {
-				return function middleware(req, res, next) {
-					req.authenticated = req.challenge === value;
-					next();
-				};
-			}
 
 			app.get('/',
 				query('code'),
@@ -107,6 +107,24 @@ describe('#authenticator', function() {
 				.expect(function(res) {
 					expect(res.statusCode).to.equal(401);
 				})
+				.end(done);
+		});
+
+		it('should extract useful info', function(done) {
+			this.app.get('/test',
+				query('code'),
+				check('secret'),
+				authentication.required(),
+				function a(req, res) {
+					expect(authentication.of(res)).to.deep.equal({
+						challenge: 'secret'
+					});
+					res.status(200).send('Hello world.');
+				}
+			);
+			request(this.app)
+				.get('/test')
+				.query({ code: 'secret' })
 				.end(done);
 		});
 	});
